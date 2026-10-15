@@ -54,7 +54,8 @@ module.exports = function (app) {
           'x-powered-by': 'PHP 7.4.3',
           'x-content-type-options': 'nosniff',
           'x-xss-protection': '1; mode=block',
-          'cache-control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'cache-control': 'no-cache, no-store, must-revalidate',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
           'pragma': 'no-cache',
           'expires': '0'
         }
