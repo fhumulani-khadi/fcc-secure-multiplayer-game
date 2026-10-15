@@ -16,27 +16,31 @@ const io = socketIO(server);
 
 app.set('trust proxy', true);
 
-// 1. Mandatory Information Security Directives & Server Masking Middleware
+// Unified Security Headers Middleware with explicit backward-compatibility runtime patches
 app.use((req, res, next) => {
+  // 1. Enforce actual HTTP responses for modern web browsers
   res.setHeader("X-Powered-By", "PHP 7.4.3");
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
-  res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-XSS-Protection", "1; mode=block");
 
+  // 2. Explicitly map lower-case copies onto the legacy property structure to satisfy the freeCodeCamp parser
   res._headers = {
     "x-powered-by": "PHP 7.4.3",
-    "X-Powered-By": "PHP 7.4.3",
-    "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
     "x-content-type-options": "nosniff",
-    "x-xss-protection": "1; mode=block"
+    "x-xss-protection": "1; mode=block",
+    "cache-control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    "pragma": "no-cache",
+    "expires": "0"
   };
+  
   next();
 });
 
 app.use('/public', express.static(process.cwd() + '/public'));
-app.use(cors({origin: '*'})); 
+app.use(cors({origin: '*'})); // For FCC testing purposes only
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -45,11 +49,10 @@ app.route('/').get(function (req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
-// Real-Time Global States Engine 
+// Real-Time Global States Engine
 let players = [];
 let coin = { x: Math.floor(Math.random() * 600) + 20, y: Math.floor(Math.random() * 400) + 20, value: 1, id: 'coin-' + Date.now() };
 
-// Real-time WebSocket connection loop handling user join, movement, and disconnection events
 io.on('connection', (socket) => {
   const newPlayer = {
     id: socket.id,
@@ -79,7 +82,6 @@ io.on('connection', (socket) => {
       const player = players.find(p => p.id === socket.id);
       if (player) {
         player.score += coin.value;
-        // Generate new random item positioning coordinates upon player collision hits
         coin = {
           x: Math.floor(Math.random() * 600) + 20,
           y: Math.floor(Math.random() * 400) + 20,
@@ -113,10 +115,11 @@ server.listen(PORT, function () {
       try {
         runner.run();
       } catch(e) {
-        console.log('Tests are not valid:', e);
+        console.log('Tests are not valid:');
+        console.error(e);
       }
     }, 1500);
   }
 });
 
-module.exports = app;
+module.exports = app; // For testing
