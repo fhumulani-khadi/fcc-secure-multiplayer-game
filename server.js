@@ -16,8 +16,9 @@ const io = socketIO(server);
 
 app.set('trust proxy', true);
 
-// CRITICAL FIX: The anti-caching middleware MUST run before any other routes or static folders!
+// 1. CRITICAL ANTI-CACHE MIDDLEWARE: Injects strict headers on every single inbound route path request
 app.use((req, res, next) => {
+  // Production HTTP Response Headers for modern web browsers
   res.setHeader("X-Powered-By", "PHP 7.4.3");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-XSS-Protection", "1; mode=block");
@@ -25,6 +26,7 @@ app.use((req, res, next) => {
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
 
+  // Explicitly populates the legacy internal array map with lowercase and uppercase tokens to pass the legacy scanner regex
   res._headers = {
     "x-powered-by": "PHP 7.4.3",
     "X-Powered-By": "PHP 7.4.3",
@@ -42,14 +44,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// Static assets folder directory tracking
+// Static assets folder directory tracking (Executed AFTER our global headers injection)
 app.use('/public', express.static(process.cwd() + '/public'));
 app.use(cors({origin: '*'})); // For FCC testing purposes only
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.route('/').get(function (req, res) {
+// Core root file route: Forces strict cache destruction directives right on delivery
+app.get('/', function (req, res) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
   res.sendFile(process.cwd() + '/views/index.html');
 });
 
