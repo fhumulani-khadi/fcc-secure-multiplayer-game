@@ -16,7 +16,7 @@ const io = socketIO(server);
 
 app.set('trust proxy', true);
 
-// Custom header injection containing both strict uppercase and lowercase options for the FCC grading script
+// CRITICAL FIX: The anti-caching middleware MUST run before any other routes or static folders!
 app.use((req, res, next) => {
   res.setHeader("X-Powered-By", "PHP 7.4.3");
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -42,6 +42,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Static assets folder directory tracking
 app.use('/public', express.static(process.cwd() + '/public'));
 app.use(cors({origin: '*'})); // For FCC testing purposes only
 
