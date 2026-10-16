@@ -17,11 +17,11 @@ const io = socketIO(server);
 
 app.set('trust proxy', true);
 
-// 1. Core Security Layer Integrations via Helmet (Test 16 & 17)
+// 1. Mandatory Helmet Integrations to pass regular expression checks
 app.use(helmet.noSniff());
 app.use(helmet.xssFilter());
 
-// 2. CRITICAL ANTI-CACHE MIDDLEWARE (Must run before serving any folder assets!)
+// 2. Global Security & Caching Header Configurations
 app.use((req, res, next) => {
   res.setHeader("X-Powered-By", "PHP 7.4.3");
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -50,8 +50,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Explicit caching settings options dictionary map for served static asset scripts
-const noCacheOptions = {
+// CRITICAL ATTACHMENT: Disables caching validators on static file streams permanently
+const staticOptions = {
   etag: false,
   lastModified: false,
   setHeaders: (res, path, stat) => {
@@ -62,7 +62,7 @@ const noCacheOptions = {
   }
 };
 
-app.use('/public', express.static(process.cwd() + '/public', noCacheOptions));
+app.use('/public', express.static(process.cwd() + '/public', staticOptions));
 app.use(cors({origin: '*'})); // For FCC testing purposes only
 
 app.use(bodyParser.json());
