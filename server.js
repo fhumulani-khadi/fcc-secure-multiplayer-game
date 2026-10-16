@@ -16,7 +16,7 @@ const io = socketIO(server);
 
 app.set('trust proxy', true);
 
-// 1. GLOBAL SECURE HEADERS MIDDLEWARE
+// 1. GLOBAL SECURTIY HEADERS MIDDLEWARE
 app.use((req, res, next) => {
   res.setHeader("X-Powered-By", "PHP 7.4.3");
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -24,6 +24,7 @@ app.use((req, res, next) => {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
   res.setHeader("Pragma", "no-cache");
   res.setHeader("Expires", "0");
+  res.setHeader("Surrogate-Control", "no-store");
 
   res._headers = {
     "x-powered-by": "PHP 7.4.3",
@@ -37,12 +38,14 @@ app.use((req, res, next) => {
     "pragma": "no-cache",
     "Pragma": "no-cache",
     "expires": "0",
-    "Expires": "0"
+    "Expires": "0",
+    "surrogate-control": "no-store",
+    "Surrogate-Control": "no-store"
   };
   next();
 });
 
-// Explicit Cache settings options dictionary map for served static project scripts
+// Explicit Cache configuration parameter maps for static directories
 const noCacheOptions = {
   etag: false,
   lastModified: false,
@@ -50,26 +53,24 @@ const noCacheOptions = {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
+    res.setHeader("Surrogate-Control", "no-store");
   }
 };
 
 app.use('/public', express.static(process.cwd() + '/public', noCacheOptions));
-app.use(cors({origin: '*'})); 
+app.use(cors({origin: '*'})); // For FCC testing purposes only
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// 2. UNIFIED HOME ROUTE: Injects strict caching configurations during direct file transmission
-app.route('/')
-  .get(function (req, res) {
-    res.setHeader("X-Powered-By", "PHP 7.4.3");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("X-XSS-Protection", "1; mode=block");
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("Expires", "0");
-    res.sendFile(process.cwd() + '/views/index.html');
-  });
+// Core root file route: Forces strict cache destruction directives right on delivery
+app.get('/', function (req, res) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  res.setHeader("Surrogate-Control", "no-store");
+  res.sendFile(process.cwd() + '/views/index.html');
+});
 
 // Real-Time Global States Engine
 let players = [];
@@ -144,4 +145,4 @@ server.listen(PORT, function () {
   }
 });
 
-module.exports = app;
+module.exports = app; // For testing
