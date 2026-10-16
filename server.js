@@ -16,7 +16,7 @@ const io = socketIO(server);
 
 app.set('trust proxy', true);
 
-// 1. GLOBAL HEADERS MIDDLEWARE (Applies to regular API and custom paths)
+// 1. GLOBAL SECURE HEADERS MIDDLEWARE
 app.use((req, res, next) => {
   res.setHeader("X-Powered-By", "PHP 7.4.3");
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -42,7 +42,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// CRITICAL FIX: Explicitly configure Express options to completely disable caching on all static assets!
+// Explicit Cache settings options dictionary map for served static project scripts
 const noCacheOptions = {
   etag: false,
   lastModified: false,
@@ -54,14 +54,17 @@ const noCacheOptions = {
 };
 
 app.use('/public', express.static(process.cwd() + '/public', noCacheOptions));
-app.use(cors({origin: '*'})); // For FCC testing purposes only
+app.use(cors({origin: '*'})); 
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Unified Home Route ensuring strict headers are enforced during transmission
+// 2. UNIFIED HOME ROUTE: Injects strict caching configurations during direct file transmission
 app.route('/')
   .get(function (req, res) {
+    res.setHeader("X-Powered-By", "PHP 7.4.3");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
@@ -141,4 +144,4 @@ server.listen(PORT, function () {
   }
 });
 
-module.exports = app; // For testing
+module.exports = app;
