@@ -17,11 +17,11 @@ const io = socketIO(server);
 
 app.set('trust proxy', true);
 
-// 1. Enforce Mandatory Security Protections via Helmet (Test 16 & 17)
+// 1. Core Security Layer Integrations via Helmet (Test 16 & 17)
 app.use(helmet.noSniff());
 app.use(helmet.xssFilter());
 
-// 2. Comprehensive Global Anti-Cache Header Injections (Test 18 & 19)
+// 2. CRITICAL ANTI-CACHE MIDDLEWARE (Must run before serving any folder assets!)
 app.use((req, res, next) => {
   res.setHeader("X-Powered-By", "PHP 7.4.3");
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -50,7 +50,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Explicitly ensure static file assets share the exact same anti-cache properties
+// Explicit caching settings options dictionary map for served static asset scripts
 const noCacheOptions = {
   etag: false,
   lastModified: false,
