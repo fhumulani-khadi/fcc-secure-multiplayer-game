@@ -17,12 +17,11 @@ const io = socketIO(server);
 
 app.set('trust proxy', true);
 
-// 1. Mandatory Helmet Directives to pass the legacy regular expression scans
+// 1. Enforce Mandatory Security Protections via Helmet (Test 16 & 17)
 app.use(helmet.noSniff());
 app.use(helmet.xssFilter());
-app.use(helmet.noCache());
 
-// 2. Comprehensive Security Headers & Mirror-Mapping Array Middleware
+// 2. Comprehensive Global Anti-Cache Header Injections (Test 18 & 19)
 app.use((req, res, next) => {
   res.setHeader("X-Powered-By", "PHP 7.4.3");
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -51,7 +50,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Explicit caching settings options dictionary map for served static asset scripts
+// Explicitly ensure static file assets share the exact same anti-cache properties
 const noCacheOptions = {
   etag: false,
   lastModified: false,
